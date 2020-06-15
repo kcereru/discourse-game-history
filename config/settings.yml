@@ -1,0 +1,4 @@
+plugins:
+  discourse_game_history_enabled:
+    default: true
+    client: true
