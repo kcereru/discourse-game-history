@@ -1,8 +1,14 @@
 import UserRowComponent from "select-kit/components/user-chooser/user-row";
 import { default as DiscourseURL } from "discourse/lib/url";
+import User from "discourse/models/user";
 
 export default UserRowComponent.extend({
   click(e) {
-    DiscourseURL.routeTo(`/c/${this.selectKit.category}?player=${this.item.id}`);
+    User.findByUsername(this.rowValue).then(user => {
+      DiscourseURL.routeTo(
+        `/c/${this.selectKit.category}?player=${user.id}`,
+        { replaceURL: true }
+      );
+    })
   }
 });
