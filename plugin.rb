@@ -17,6 +17,18 @@ PLUGIN_NAME ||= 'DiscourseGameHistory'
 load File.expand_path('lib/discourse-game-history/engine.rb', __dir__)
 
 after_initialize do
+  ::TopicQuery.add_custom_filter(:player) do |topics, query|
+    if query.options[:player]
+      topics.where("topics.id in (
+        SELECT topic_id FROM topic_custom_fields
+        WHERE name = 'players'
+        AND '#{query.options[:player].to_i}' = ANY (string_to_array(value, ',')::int[])
+      )")
+    else
+      topics
+    end
+  end
+
   # https://github.com/discourse/discourse/blob/master/lib/plugin/instance.rb
   on(:post_edited) do |post|
     if post.is_first_post?
