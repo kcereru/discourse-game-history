@@ -1,15 +1,15 @@
 import UserChooser from "select-kit/components/user-chooser";
 import { getOwner } from "discourse-common/lib/get-owner";
+import { computed } from "@ember/object";
 
 export default UserChooser.extend({
   classNames: "player-filter-dropdown",
-
-  selectKitOptions: {
-    icon: "translate",
-    filterable: true,
-    showFullTitle: false,
-    autoFilterable: false,
-  },
+  value: computed("filtered_player", {
+    get() {
+      const controller = getOwner(this).lookup('controller:navigation/category');
+      return [controller.target.currentRoute.queryParams.player];
+    }
+  }),
 
   didInsertElement() {
     const controller = getOwner(this).lookup('controller:navigation/category');

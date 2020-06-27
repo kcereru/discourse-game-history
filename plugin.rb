@@ -22,7 +22,7 @@ after_initialize do
       topics.where("topics.id in (
         SELECT topic_id FROM topic_custom_fields
         WHERE name = 'players'
-        AND '#{query.options[:player].to_i}' = ANY (string_to_array(value, ',')::int[])
+        AND '#{query.options[:player].downcase}' = ANY (string_to_array(value, ','))
       )")
     else
       topics
@@ -43,19 +43,14 @@ after_initialize do
         stripped  = ActionController::Base.helpers.strip_tags(alive_elements.last.text)
         usernames = stripped.split("\n")
 
-        # clean + remove empty lines
+        # clean, downcase + remove empty lines
 
-        usernames.map! {|player| player.tr('@', '')}
+        usernames.map! {|player| player.tr('@', '').tr(',', '').downcase}
         usernames.reject!(&:blank?)
-
-        # convert to ids, ignore invalid users
-
-        players     = usernames.map { |username| User.find_by_username_lower(username.downcase) }.compact
-        player_ids  = players.map { |user| user.id }
 
         # save
 
-        post.topic.custom_fields['players'] = player_ids.join(',')
+        post.topic.custom_fields['players'] = usernames.join(',')
         post.topic.save_custom_fields(true)
       end
     end
