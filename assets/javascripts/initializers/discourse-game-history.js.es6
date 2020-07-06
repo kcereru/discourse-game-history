@@ -3,6 +3,8 @@ import CategoryController from 'discourse/controllers/navigation/category';
 
 function initializeDiscourseGameHistory(api) {
   // https://github.com/discourse/discourse/blob/master/app/assets/javascripts/discourse/lib/plugin-api.js.es6
+
+  api.addDiscoveryQueryParam("player", { replace: true, refreshModel: true });
 }
 
 export default {
