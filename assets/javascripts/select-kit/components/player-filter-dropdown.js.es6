@@ -13,7 +13,7 @@ export default UserChooser.extend({
 
   didInsertElement() {
     const controller = getOwner(this).lookup('controller:navigation/category');
-    this.set('selectKit.category', controller.get('category.fullSlug'));
+    this.set('selectKit.categoryUrl', controller.get('category.url'));
   },
 
   modifyComponentForRow() {
