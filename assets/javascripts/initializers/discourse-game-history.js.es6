@@ -5,6 +5,13 @@ function initializeDiscourseGameHistory(api) {
   // https://github.com/discourse/discourse/blob/master/app/assets/javascripts/discourse/lib/plugin-api.js.es6
 
   api.addDiscoveryQueryParam("player", { replace: true, refreshModel: true });
+  api.registerConnectorClass('before-create-topic-button', 'player-filter', {
+    shouldRender(args, component) {
+      const controller = Discourse.__container__.lookup("controller:navigation/category");
+
+      return controller.get('category.enable_game_filters');
+    }
+  });
 }
 
 export default {

@@ -29,6 +29,14 @@ after_initialize do
     end
   end
 
+  Category.register_custom_field_type('enable_game_filters', :boolean)
+
+    Site.preloaded_category_custom_fields << "enable_game_filters" if Site.respond_to? :preloaded_category_custom_fields
+    add_to_class(:category, "enable_game_filters".to_sym) do
+      self.custom_fields["enable_game_filters"] || ( SiteSetting.respond_to?("enable_game_filters") ? SiteSetting.send("enable_game_filters") : false )
+    end
+    add_to_serializer(:basic_category, "enable_game_filters".to_sym) { object.send("enable_game_filters") }
+
   # https://github.com/discourse/discourse/blob/master/lib/plugin/instance.rb
   on(:post_edited) do |post|
     if post.is_first_post?
@@ -55,4 +63,5 @@ after_initialize do
       end
     end
   end
+
 end
