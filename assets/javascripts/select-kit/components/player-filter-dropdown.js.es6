@@ -13,7 +13,13 @@ export default UserChooser.extend({
 
   didInsertElement() {
     const controller = getOwner(this).lookup('controller:navigation/category');
-    this.set('selectKit.categoryUrl', controller.get('category.url'));
+
+    // target.url works on both category and tag page, but includes query param so remove separately
+
+    var fullUrl = controller.get('target.url')
+    var url     = fullUrl.split('?')[0]
+
+    this.set('selectKit.url', url);
   },
 
   modifyComponentForRow() {

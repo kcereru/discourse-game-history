@@ -64,4 +64,32 @@ after_initialize do
     end
   end
 
+
+  on(:post_created) do |post|
+    if post.is_first_post?
+
+      html  = post.cooked
+      doc   = Nokogiri::HTML.parse(html)
+
+      alive_elements  = doc.xpath("//div[@class='alive']")
+
+      if(alive_elements.last)
+
+        stripped  = ActionController::Base.helpers.strip_tags(alive_elements.last.text)
+        usernames = stripped.split("\n")
+
+        # clean, downcase + remove empty lines
+
+        usernames.map! {|player| player.tr('@', '').tr(',', '').downcase}
+        usernames.reject!(&:blank?)
+
+        # save
+
+        post.topic.custom_fields['players'] = usernames.join(',')
+        post.topic.save_custom_fields(true)
+      end
+    end
+  end
+
+
 end

@@ -6,7 +6,7 @@ export default UserRowComponent.extend({
   click(e) {
     this.selectKit.select(this.rowValue, this.item);
     DiscourseURL.redirectTo(
-      `${this.selectKit.categoryUrl}?player=${this.rowValue}`,
+      `${this.selectKit.url}?player=${this.rowValue}`,
       { replaceURL: true }
     );
   },
