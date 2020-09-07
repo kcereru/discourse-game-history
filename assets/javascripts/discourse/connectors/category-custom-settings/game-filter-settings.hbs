@@ -1,0 +1,13 @@
+  <h3>{{i18n 'game_filters.title'}}</h3>
+  <section class='field'>
+    <div class="enable-game-filters">
+      <label class="checkbox-label">
+        {{input
+          type="checkbox"
+          checked=(readonly category.enable_game_filters)
+          change=(action "onChangeSetting" value="target.checked")
+        }}
+        {{i18n 'game_history.enable_game_filters'}}
+      </label>
+    </div>
+  </section>
