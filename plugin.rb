@@ -3,8 +3,8 @@
 # name: discourse-game-history
 # about: A Discourse plugin for Mafia451 that allows users to filter completed games by various game features.
 # version: 0.1
-# authors: kcereru
-# url: https://github.com/kcereru
+# authors: KC Maddever (kcereru)
+# url: https://github.com/kcereru/discourse-game-history
 
 register_asset 'stylesheets/common/discourse-game-history.scss'
 register_asset 'stylesheets/desktop/discourse-game-history.scss', :desktop
@@ -17,5 +17,79 @@ PLUGIN_NAME ||= 'DiscourseGameHistory'
 load File.expand_path('lib/discourse-game-history/engine.rb', __dir__)
 
 after_initialize do
+  ::TopicQuery.add_custom_filter(:player) do |topics, query|
+    if query.options[:player]
+      topics.where("topics.id in (
+        SELECT topic_id FROM topic_custom_fields
+        WHERE name = 'players'
+        AND '#{query.options[:player].downcase}' = ANY (string_to_array(value, ','))
+      )")
+    else
+      topics
+    end
+  end
+
+  Category.register_custom_field_type('enable_game_filters', :boolean)
+
+    Site.preloaded_category_custom_fields << "enable_game_filters" if Site.respond_to? :preloaded_category_custom_fields
+    add_to_class(:category, "enable_game_filters".to_sym) do
+      self.custom_fields["enable_game_filters"] || ( SiteSetting.respond_to?("enable_game_filters") ? SiteSetting.send("enable_game_filters") : false )
+    end
+    add_to_serializer(:basic_category, "enable_game_filters".to_sym) { object.send("enable_game_filters") }
+
   # https://github.com/discourse/discourse/blob/master/lib/plugin/instance.rb
+  on(:post_edited) do |post|
+    if post.is_first_post?
+
+      html  = post.cooked
+      doc   = Nokogiri::HTML.parse(html)
+
+      alive_elements  = doc.xpath("//div[@class='alive']")
+
+      if(alive_elements.last)
+
+        stripped  = ActionController::Base.helpers.strip_tags(alive_elements.last.text)
+        usernames = stripped.split("\n")
+
+        # clean, downcase + remove empty lines
+
+        usernames.map! {|player| player.tr('@', '').tr(',', '').downcase}
+        usernames.reject!(&:blank?)
+
+        # save
+
+        post.topic.custom_fields['players'] = usernames.join(',')
+        post.topic.save_custom_fields(true)
+      end
+    end
+  end
+
+
+  on(:post_created) do |post|
+    if post.is_first_post?
+
+      html  = post.cooked
+      doc   = Nokogiri::HTML.parse(html)
+
+      alive_elements  = doc.xpath("//div[@class='alive']")
+
+      if(alive_elements.last)
+
+        stripped  = ActionController::Base.helpers.strip_tags(alive_elements.last.text)
+        usernames = stripped.split("\n")
+
+        # clean, downcase + remove empty lines
+
+        usernames.map! {|player| player.tr('@', '').tr(',', '').downcase}
+        usernames.reject!(&:blank?)
+
+        # save
+
+        post.topic.custom_fields['players'] = usernames.join(',')
+        post.topic.save_custom_fields(true)
+      end
+    end
+  end
+
+
 end
